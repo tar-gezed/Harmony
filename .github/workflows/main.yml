@@ -1,0 +1,41 @@
+# Simple workflow for deploying a static Angular app to GitHub Pages
+name: Deploy Angular App to GitHub Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages.
+# The AhsanAyaz/angular-deploy-gh-pages-actions action needs `contents: write`
+# to push the build to the `gh-pages` branch.
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Last.fm API key
+        env:
+          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+        if: ${{ env.LASTFM_API_KEY != '' }}
+        run: sed -i "s/'YOUR_LAST_FM_API_KEY'/'${{ secrets.LASTFM_API_KEY }}'/g" src/config.ts
+
+      - name: Build and Deploy
+        uses: AhsanAyaz/angular-deploy-gh-pages-actions@v1.4.0
+        with:
+          # This token is provided by Actions, you do not need to create your own token
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          # The branch the action should deploy to.
+          deploy_branch: gh-pages
+          # The base-href for the project, should be the name of the repository.
+          base_href: /harmony/
+          # The folder where the built app is stored. The build output is in the 'dist' folder.
+          angular_dist_build_folder: dist
