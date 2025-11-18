@@ -1,0 +1,44 @@
+/*
+Using a CSS file for animations to keep the HTML cleaner.
+These could also be done with Tailwind config, but this is simpler for an Applet environment.
+*/
+
+@keyframes gradient-xy {
+    0%, 100% {
+        background-size: 400% 400%;
+        background-position: 0% 50%;
+    }
+    50% {
+        background-size: 200% 200%;
+        background-position: 100% 50%;
+    }
+}
+
+.animate-gradient-xy {
+    animation: gradient-xy 15s ease infinite;
+}
+
+.bg-grid-pattern {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 2rem 2rem;
+}
+
+/* Custom scrollbar for tracklist */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}

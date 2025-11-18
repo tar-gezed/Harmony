@@ -1,0 +1,5 @@
+{
+  "name": "Harmony - Music Album Rater - Deezer API v2",
+  "description": "An application to fetch music album info, rate each track, and generate a beautiful, shareable infographic for social media, inspired by glassmorphism design.",
+  "requestFramePermissions": []
+}
