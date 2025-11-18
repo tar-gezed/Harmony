@@ -5,20 +5,21 @@ import { MusicDataService, Album, Track, RatedAlbum } from './services/music-dat
 import { DeezerService } from './services/deezer.service';
 import { LastFmService } from './services/lastfm.service';
 import { activeProvider } from './config';
+import * as htmlToImage from 'html-to-image';
 
 export interface RatedTrack extends Track {
   rating: number | null;
 }
 
 export interface InfographicData {
-    album: RatedAlbum;
-    bestSong: RatedTrack;
-    worstSong: RatedTrack;
-    overallScore: number;
-    backgroundUrl: string;
+  album: RatedAlbum;
+  bestSong: RatedTrack;
+  worstSong: RatedTrack;
+  overallScore: number;
+  backgroundUrl: string;
 }
 
-declare var html2canvas: any;
+
 
 // Factory function to provide the correct music service based on config
 export function musicDataServiceFactory(): MusicDataService {
@@ -76,14 +77,21 @@ export class AppComponent {
       }
       totalScore += track.rating!;
     }
-    
+
     const overallScore = parseFloat(((totalScore / ratedAlbum.tracks.length)).toFixed(1));
 
     return { album: ratedAlbum, bestSong, worstSong, overallScore, backgroundUrl: this.infographicBgUrl() };
   });
-  
+
+  trackListFontSize = computed(() => {
+    const count = this.album()?.tracks.length || 0;
+    if (count > 16) return 'text-[10px] leading-tight';
+    if (count > 12) return 'text-xs leading-tight';
+    return 'text-sm leading-normal';
+  });
+
   infographicElement = viewChild<ElementRef>('infographic');
-  
+
   ratingScale = [
     { score: 10, label: 'Perfect', color: 'bg-fuchsia-500' },
     { score: 9, label: 'Amazing', color: 'bg-purple-500' },
@@ -95,9 +103,9 @@ export class AppComponent {
     { score: 3, label: 'Bad', color: 'bg-orange-500' },
     { score: 2, label: 'Terrible', color: 'bg-red-500' },
     { score: 1, label: 'Dreadful', color: 'bg-rose-700' },
-    { score: 0, label: 'Unrated', color: 'bg-gray-500'}
+    { score: 0, label: 'Unrated', color: 'bg-gray-500' }
   ];
-  
+
   getRatingInfo(score: number | null): { label: string, color: string } {
     if (score === null) score = 0;
     const roundedScore = Math.round(score);
@@ -109,7 +117,7 @@ export class AppComponent {
     if (!this.searchQuery().artist || !this.searchQuery().album) return;
     this.errorMessage.set(null);
     this.appState.set('loading');
-    
+
     this.musicDataService.getAlbumAndArtistInfo(this.searchQuery().artist, this.searchQuery().album)
       .subscribe({
         next: ({ album, artistImageUrl }) => {
@@ -126,7 +134,7 @@ export class AppComponent {
           this.errorMessage.set(err.message || 'An unknown error occurred.');
           this.appState.set('search');
         }
-    });
+      });
   }
 
   updateSearchQuery(field: 'artist' | 'album', value: string) {
@@ -139,9 +147,9 @@ export class AppComponent {
       if (!currentAlbum) return null;
       const newTracks = [...currentAlbum.tracks];
       const ratingValue = parseInt(rating, 10);
-      newTracks[trackIndex] = { 
-        ...newTracks[trackIndex], 
-        rating: isNaN(ratingValue) ? null : Math.max(0, Math.min(10, ratingValue)) 
+      newTracks[trackIndex] = {
+        ...newTracks[trackIndex],
+        rating: isNaN(ratingValue) ? null : Math.max(0, Math.min(10, ratingValue))
       };
       return { ...currentAlbum, tracks: newTracks };
     });
@@ -155,32 +163,30 @@ export class AppComponent {
   downloadInfographic() {
     const element = this.infographicElement()?.nativeElement;
     if (!element) return;
-    
+
     this.appState.set('generating');
 
-    html2canvas(element, {
-      scale: 3,
-      backgroundColor: null,
-      useCORS: true
-    }).then((canvas: any) => {
-      const link = document.createElement('a');
-      const albumName = this.album()?.name.replace(/ /g, '_');
-      const artistName = this.album()?.artist.replace(/ /g, '_');
-      link.download = `${artistName}-${albumName}-rating.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      this.appState.set('infographic');
-    }).catch((err: any) => {
-      console.error('Image generation failed:', err);
-      this.appState.set('infographic');
-    });
+    htmlToImage.toPng(element, { pixelRatio: 4 })
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        const albumName = this.album()?.name.replace(/ /g, '_');
+        const artistName = this.album()?.artist.replace(/ /g, '_');
+        link.download = `${artistName}-${albumName}-rating.png`;
+        link.href = dataUrl;
+        link.click();
+        this.appState.set('infographic');
+      })
+      .catch((err) => {
+        console.error('Image generation failed:', err);
+        this.appState.set('infographic');
+      });
   }
-  
+
   startOver() {
     this.appState.set('search');
     this.album.set(null);
     this.infographicBgUrl.set('');
-    this.searchQuery.set({artist: '', album: ''});
+    this.searchQuery.set({ artist: '', album: '' });
     this.errorMessage.set(null);
   }
 }

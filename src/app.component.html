@@ -1,155 +1,179 @@
-<div class="relative min-h-screen w-full overflow-hidden bg-gray-900 text-white flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
+<div
+  class="relative min-h-screen w-full overflow-hidden bg-gray-900 text-white flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
   <!-- Animated Gradient Background -->
-  <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-30 animate-gradient-xy"></div>
+  <div
+    class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-30 animate-gradient-xy">
+  </div>
   <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
-  
+
   <main class="relative z-10 w-full max-w-7xl mx-auto transition-all duration-500">
     @switch (appState()) {
-      @case ('search') {
-        <div class="flex flex-col items-center justify-center min-h-[80vh]">
-          <div class="w-full max-w-lg p-8 space-y-6 bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10">
-            <div class="text-center">
-              <h1 class="text-4xl font-bold tracking-tighter text-white">Harmony - Music Album Rater</h1>
-              <p class="mt-2 text-gray-300">Generate beautiful, shareable rating infographics for your favorite music albums.</p>
-            </div>
-             @if (errorMessage()) {
-              <div class="p-3 my-4 text-sm text-red-300 bg-red-500/20 border border-red-500/30 rounded-lg">
-                {{ errorMessage() }}
+    @case ('search') {
+    <div class="flex flex-col items-center justify-center min-h-[80vh]">
+      <div
+        class="w-full max-w-lg p-8 space-y-6 bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10">
+        <div class="text-center">
+          <h1 class="text-4xl font-bold tracking-tighter text-white">Harmony - Music Album Rater</h1>
+          <p class="mt-2 text-gray-300">Generate beautiful, shareable rating infographics for your favorite music
+            albums.</p>
+        </div>
+        @if (errorMessage()) {
+        <div class="p-3 my-4 text-sm text-red-300 bg-red-500/20 border border-red-500/30 rounded-lg">
+          {{ errorMessage() }}
+        </div>
+        }
+        <form (submit)="$event.preventDefault(); searchAlbum()" class="space-y-4">
+          <div>
+            <label for="artist" class="block text-sm font-medium text-gray-300">Artist</label>
+            <input id="artist" name="artist" type="text" [ngModel]="searchQuery().artist"
+              (ngModelChange)="updateSearchQuery('artist', $event)" required placeholder="e.g. Daft Punk"
+              class="mt-1 block w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+          </div>
+          <div>
+            <label for="album" class="block text-sm font-medium text-gray-300">Album</label>
+            <input id="album" name="album" type="text" [ngModel]="searchQuery().album"
+              (ngModelChange)="updateSearchQuery('album', $event)" required placeholder="e.g. Discovery"
+              class="mt-1 block w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+          </div>
+          <button type="submit" [disabled]="!searchQuery().artist || !searchQuery().album"
+            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 focus:ring-offset-gray-900 disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors">
+            Search Album
+          </button>
+        </form>
+      </div>
+    </div>
+    }
+    @case ('loading') {
+    <div class="flex flex-col items-center justify-center min-h-[80vh] text-center">
+      <div class="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-purple-500"></div>
+      <p class="mt-4 text-lg text-gray-300">Fetching album data...</p>
+    </div>
+    }
+    @case ('rating') {
+    @if (album(); as currentAlbum) {
+    <div
+      class="w-full max-w-4xl mx-auto p-4 sm:p-8 bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10">
+      <div class="flex flex-col md:flex-row gap-8">
+        <div class="md:w-1/3 flex-shrink-0">
+          <img [src]="currentAlbum.coverUrl" alt="Album cover for {{currentAlbum.name}}"
+            class="w-full aspect-square rounded-lg shadow-lg">
+          <h2 class="text-2xl sm:text-3xl font-bold mt-4 tracking-tight">{{ currentAlbum.name }}</h2>
+          <h3 class="text-lg sm:text-xl text-gray-300">{{ currentAlbum.artist }}</h3>
+          <button (click)="startOver()" class="mt-4 text-sm text-purple-400 hover:text-purple-300">&larr; Search for
+            another album</button>
+        </div>
+        <div class="md:w-2/3 flex-grow">
+          <h4 class="text-xl font-semibold mb-4 border-b border-white/10 pb-2">Rate each track (0-10)</h4>
+          <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+            @for (track of currentAlbum.tracks; track track.name; let i = $index) {
+            <div
+              class="flex items-center justify-between gap-4 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+              <div class="flex items-center gap-3 overflow-hidden">
+                <span class="text-sm font-mono text-gray-400 w-6 text-right flex-shrink-0">{{ i + 1 }}.</span>
+                <span class="font-medium truncate">{{ track.name }}</span>
               </div>
+              <input type="number" min="0" max="10" [value]="track.rating === null ? '' : track.rating"
+                (input)="updateTrackRating(i, $event)"
+                class="w-20 px-2 py-1 text-center bg-black/20 border border-white/10 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
             }
-            <form (submit)="$event.preventDefault(); searchAlbum()" class="space-y-4">
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 text-center">
+        <button (click)="generateInfographic()" [disabled]="!isRatingComplete()"
+          class="px-8 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 focus:ring-offset-gray-900 disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+          Generate Infographic
+        </button>
+        <p [class.opacity-0]="isRatingComplete()" class="text-sm text-gray-400 mt-2 transition-opacity h-5">
+          @if (!isRatingComplete()) {
+          <span>Please rate all tracks to continue.</span>
+          }
+        </p>
+      </div>
+    </div>
+    }
+    }
+    @case ('infographic') {
+    @if (infographicData(); as data) {
+    <div class="flex flex-col items-center gap-6">
+      <p class="text-xl text-center">Here is your shareable album rating!</p>
+      <!-- This is the container for the infographic that will be captured -->
+      <div class="w-[360px] h-[640px] shadow-2xl rounded-2xl overflow-hidden">
+        <div #infographic class="w-full h-full p-6 text-white bg-gray-900"
+          [style.background-image]="'url(' + data.backgroundUrl + ')'"
+          style="background-size: cover; background-position: center;">
+          <div
+            class="relative w-full h-full flex flex-col bg-black/70 backdrop-blur-md p-4 rounded-xl border border-white/20">
+            <div class="flex items-center gap-4 border-b border-white/20 pb-3">
+              <img [src]="data.album.coverUrl" alt="Album cover" class="w-20 h-20 rounded-md shadow-lg">
               <div>
-                <label for="artist" class="block text-sm font-medium text-gray-300">Artist</label>
-                <input id="artist" name="artist" type="text" [ngModel]="searchQuery().artist" (ngModelChange)="updateSearchQuery('artist', $event)" required
-                       placeholder="e.g. Daft Punk"
-                       class="mt-1 block w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <h2 class="text-xl font-bold tracking-tight leading-tight">{{ data.album.name }}</h2>
+                <h3 class="text-base text-gray-300">{{ data.album.artist }}</h3>
+              </div>
+            </div>
+            <div class="flex-grow mt-3 space-y-1 pr-2 -mr-2" [ngClass]="trackListFontSize()">
+              @for (track of data.album.tracks; track track.name; let i = $index) {
+              <div class="flex justify-between items-center text-xs">
+                <span class="truncate w-3/4">{{i+1}}. {{ track.name }}</span>
+                <span class="font-bold px-2 py-0.5 rounded-full" [class]="getRatingInfo(track.rating).color">{{
+                  track.rating }}</span>
+              </div>
+              }
+            </div>
+            <div class="flex-shrink-0 mt-3 pt-3 border-t border-white/20 grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <p class="uppercase text-gray-400 tracking-wider">Best Song</p>
+                <p class="font-semibold truncate">{{ data.bestSong.name }} ({{ data.bestSong.rating }})</p>
               </div>
               <div>
-                <label for="album" class="block text-sm font-medium text-gray-300">Album</label>
-                <input id="album" name="album" type="text" [ngModel]="searchQuery().album" (ngModelChange)="updateSearchQuery('album', $event)" required
-                       placeholder="e.g. Discovery"
-                       class="mt-1 block w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <p class="uppercase text-gray-400 tracking-wider">Worst Song</p>
+                <p class="font-semibold truncate">{{ data.worstSong.name }} ({{ data.worstSong.rating }})</p>
               </div>
-              <button type="submit" [disabled]="!searchQuery().artist || !searchQuery().album"
-                      class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 focus:ring-offset-gray-900 disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors">
-                Search Album
-              </button>
-            </form>
+            </div>
+            <div class="flex-shrink-0 mt-3 pt-3 border-t border-white/20 text-center">
+              <p class="text-xs uppercase text-gray-400 tracking-wider">Overall Score</p>
+              <p class="text-4xl font-extrabold tracking-tighter">{{ data.overallScore * 10 }}<span
+                  class="text-2xl text-gray-400">/100</span></p>
+            </div>
           </div>
         </div>
-      }
-      @case ('loading') {
-        <div class="flex flex-col items-center justify-center min-h-[80vh] text-center">
-            <div class="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-purple-500"></div>
-            <p class="mt-4 text-lg text-gray-300">Fetching album data...</p>
-        </div>
-      }
-      @case ('rating') {
-        @if (album(); as currentAlbum) {
-          <div class="w-full max-w-4xl mx-auto p-4 sm:p-8 bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10">
-            <div class="flex flex-col md:flex-row gap-8">
-              <div class="md:w-1/3 flex-shrink-0">
-                <img [src]="currentAlbum.coverUrl" alt="Album cover for {{currentAlbum.name}}" class="w-full aspect-square rounded-lg shadow-lg">
-                <h2 class="text-2xl sm:text-3xl font-bold mt-4 tracking-tight">{{ currentAlbum.name }}</h2>
-                <h3 class="text-lg sm:text-xl text-gray-300">{{ currentAlbum.artist }}</h3>
-                 <button (click)="startOver()" class="mt-4 text-sm text-purple-400 hover:text-purple-300">&larr; Search for another album</button>
-              </div>
-              <div class="md:w-2/3 flex-grow">
-                <h4 class="text-xl font-semibold mb-4 border-b border-white/10 pb-2">Rate each track (0-10)</h4>
-                <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-                  @for (track of currentAlbum.tracks; track track.name; let i = $index) {
-                    <div class="flex items-center justify-between gap-4 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                      <div class="flex items-center gap-3 overflow-hidden">
-                        <span class="text-sm font-mono text-gray-400 w-6 text-right flex-shrink-0">{{ i + 1 }}.</span>
-                        <span class="font-medium truncate">{{ track.name }}</span>
-                      </div>
-                      <input type="number" min="0" max="10" [value]="track.rating === null ? '' : track.rating" (input)="updateTrackRating(i, $event)"
-                             class="w-20 px-2 py-1 text-center bg-black/20 border border-white/10 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-            <div class="mt-8 text-center">
-              <button (click)="generateInfographic()" [disabled]="!isRatingComplete()" 
-                      class="px-8 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 focus:ring-offset-gray-900 disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                Generate Infographic
-              </button>
-              <p [class.opacity-0]="isRatingComplete()" class="text-sm text-gray-400 mt-2 transition-opacity h-5">
-                @if (!isRatingComplete()) {
-                  <span>Please rate all tracks to continue.</span>
-                }
-              </p>
-            </div>
-          </div>
-        }
-      }
-      @case ('infographic') {
-        @if (infographicData(); as data) {
-          <div class="flex flex-col items-center gap-6">
-            <p class="text-xl text-center">Here is your shareable album rating!</p>
-            <!-- This is the container for the infographic that will be captured -->
-            <div class="w-[360px] h-[640px] shadow-2xl rounded-2xl overflow-hidden">
-              <div #infographic class="w-full h-full p-6 text-white bg-gray-900" 
-                  [style.background-image]="'url(' + data.backgroundUrl + ')'"
-                  style="background-size: cover; background-position: center;">
-                <div class="relative w-full h-full flex flex-col bg-black/70 backdrop-blur-md p-4 rounded-xl border border-white/20">
-                  <div class="flex items-center gap-4 border-b border-white/20 pb-3">
-                    <img [src]="data.album.coverUrl" alt="Album cover" class="w-20 h-20 rounded-md shadow-lg">
-                    <div>
-                      <h2 class="text-xl font-bold tracking-tight leading-tight">{{ data.album.name }}</h2>
-                      <h3 class="text-base text-gray-300">{{ data.album.artist }}</h3>
-                    </div>
-                  </div>
-                  <div class="flex-grow overflow-y-auto mt-3 text-sm space-y-1 pr-2 -mr-2">
-                    @for (track of data.album.tracks; track track.name; let i = $index) {
-                      <div class="flex justify-between items-center text-xs">
-                        <span class="truncate w-3/4">{{i+1}}. {{ track.name }}</span>
-                        <span class="font-bold px-2 py-0.5 rounded-full" [class]="getRatingInfo(track.rating).color">{{ track.rating }}</span>
-                      </div>
-                    }
-                  </div>
-                  <div class="flex-shrink-0 mt-3 pt-3 border-t border-white/20 grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <p class="uppercase text-gray-400 tracking-wider">Best Song</p>
-                      <p class="font-semibold truncate">{{ data.bestSong.name }} ({{ data.bestSong.rating }})</p>
-                    </div>
-                    <div>
-                      <p class="uppercase text-gray-400 tracking-wider">Worst Song</p>
-                      <p class="font-semibold truncate">{{ data.worstSong.name }} ({{ data.worstSong.rating }})</p>
-                    </div>
-                  </div>
-                  <div class="flex-shrink-0 mt-3 pt-3 border-t border-white/20 text-center">
-                    <p class="text-xs uppercase text-gray-400 tracking-wider">Overall Score</p>
-                    <p class="text-5xl font-extrabold tracking-tighter">{{ data.overallScore * 10 }}<span class="text-2xl text-gray-400">/100</span></p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-               <button (click)="downloadInfographic()" class="px-6 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                  Download
-               </button>
-               <button (click)="startOver()" class="px-6 py-2 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>
-                  Start Over
-                </button>
-            </div>
-          </div>
-        } @else {
-          <div class="text-center">
-            <p>Something went wrong. Please start over.</p>
-            <button (click)="startOver()" class="mt-4 px-6 py-2 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors">Start Over</button>
-          </div>
-        }
-      }
-      @case('generating') {
-         <div class="flex flex-col items-center justify-center min-h-[80vh] text-center">
-            <div class="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-green-500"></div>
-            <p class="mt-4 text-lg text-gray-300">Generating your image...</p>
-        </div>
-      }
+      </div>
+      <div class="flex items-center gap-4">
+        <button (click)="downloadInfographic()"
+          class="px-6 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+              clip-rule="evenodd" />
+          </svg>
+          Download
+        </button>
+        <button (click)="startOver()"
+          class="px-6 py-2 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+              clip-rule="evenodd" />
+          </svg>
+          Start Over
+        </button>
+      </div>
+    </div>
+    } @else {
+    <div class="text-center">
+      <p>Something went wrong. Please start over.</p>
+      <button (click)="startOver()"
+        class="mt-4 px-6 py-2 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors">Start Over</button>
+    </div>
+    }
+    }
+    @case('generating') {
+    <div class="flex flex-col items-center justify-center min-h-[80vh] text-center">
+      <div class="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-green-500"></div>
+      <p class="mt-4 text-lg text-gray-300">Generating your image...</p>
+    </div>
+    }
     }
   </main>
 </div>
