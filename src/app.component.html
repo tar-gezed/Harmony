@@ -106,7 +106,15 @@
           <div
             class="relative w-full h-full flex flex-col bg-black/70 backdrop-blur-md p-4 rounded-xl border border-white/20">
             <div class="flex items-center gap-4 border-b border-white/20 pb-3">
-              <img [src]="data.album.coverUrl" alt="Album cover" class="w-20 h-20 rounded-md shadow-lg">
+              <div class="relative flex-shrink-0">
+                <img [src]="data.album.coverUrl" alt="Album cover" class="w-20 h-20 rounded-md shadow-lg">
+                @if (data.album.tracks.length > 14) {
+                <div
+                  class="absolute -bottom-2 -right-2 bg-white text-black font-black text-xs w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-900 shadow-lg z-10">
+                  {{ data.overallScore * 10 }}
+                </div>
+                }
+              </div>
               <div>
                 <h2 class="text-xl font-bold tracking-tight leading-tight">{{ data.album.name }}</h2>
                 <h3 class="text-base text-gray-300">{{ data.album.artist }}</h3>
@@ -131,49 +139,53 @@
                 <p class="font-semibold truncate">{{ data.worstSong.name }} ({{ data.worstSong.rating }})</p>
               </div>
             </div>
-            <div class="flex-shrink-0 mt-3 pt-3 border-t border-white/20 text-center">
+            @if (data.album.tracks.length <= 14) { <div
+              class="flex-shrink-0 mt-3 pt-3 border-t border-white/20 text-center">
               <p class="text-xs uppercase text-gray-400 tracking-wider">Overall Score</p>
-              <p class="text-4xl font-extrabold tracking-tighter">{{ data.overallScore * 10 }}<span
-                  class="text-2xl text-gray-400">/100</span></p>
-            </div>
+              <p [class.text-3xl]="data.album.tracks.length === 14" [class.text-4xl]="data.album.tracks.length < 14"
+                class="font-extrabold tracking-tighter">
+                {{ data.overallScore * 10 }}<span class="text-2xl text-gray-400">/100</span>
+              </p>
           </div>
+          }
         </div>
       </div>
-      <div class="flex items-center gap-4">
-        <button (click)="downloadInfographic()"
-          class="px-6 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-              clip-rule="evenodd" />
-          </svg>
-          Download
-        </button>
-        <button (click)="startOver()"
-          class="px-6 py-2 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-              clip-rule="evenodd" />
-          </svg>
-          Start Over
-        </button>
-      </div>
     </div>
-    } @else {
-    <div class="text-center">
-      <p>Something went wrong. Please start over.</p>
+    <div class="flex items-center gap-4">
+      <button (click)="downloadInfographic()"
+        class="px-6 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+            clip-rule="evenodd" />
+        </svg>
+        Download
+      </button>
       <button (click)="startOver()"
-        class="mt-4 px-6 py-2 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors">Start Over</button>
+        class="px-6 py-2 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+            clip-rule="evenodd" />
+        </svg>
+        Start Over
+      </button>
     </div>
-    }
-    }
-    @case('generating') {
-    <div class="flex flex-col items-center justify-center min-h-[80vh] text-center">
-      <div class="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-green-500"></div>
-      <p class="mt-4 text-lg text-gray-300">Generating your image...</p>
-    </div>
-    }
-    }
-  </main>
+</div>
+} @else {
+<div class="text-center">
+  <p>Something went wrong. Please start over.</p>
+  <button (click)="startOver()"
+    class="mt-4 px-6 py-2 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors">Start Over</button>
+</div>
+}
+}
+@case('generating') {
+<div class="flex flex-col items-center justify-center min-h-[80vh] text-center">
+  <div class="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-green-500"></div>
+  <p class="mt-4 text-lg text-gray-300">Generating your image...</p>
+</div>
+}
+}
+</main>
 </div>
